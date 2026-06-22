@@ -1,0 +1,121 @@
+[gd_scene load_steps=16 format=3 uid="uid://dfd08eqgqijph"]
+
+[ext_resource type="Texture2D" uid="uid://db2d0w6jmkg1m" path="res://enemies/bat.png" id="1_nu3at"]
+[ext_resource type="Script" uid="uid://bucmadmmeoyya" path="res://enemies/bat.gd" id="1_tc28o"]
+[ext_resource type="Texture2D" uid="uid://du0uetncnfpd7" path="res://shadows/small_shadow.png" id="2_mtn0m"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wnjb2"]
+radius = 5.0
+
+[sub_resource type="Animation" id="Animation_5of3o"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_tc28o"]
+resource_name = "fly"
+length = 0.5
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_mtn0m"]
+_data = {
+&"RESET": SubResource("Animation_5of3o"),
+&"fly": SubResource("Animation_tc28o")
+}
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_mtn0m"]
+animation = &"fly"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_tc28o"]
+animation = &"fly"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_5of3o"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_wnjb2"]
+advance_mode = 2
+advance_expression = "can_see_player()"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_nwmda"]
+advance_mode = 2
+advance_expression = "not can_see_player()"
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_mvvpf"]
+states/Chase/node = SubResource("AnimationNodeAnimation_mtn0m")
+states/Chase/position = Vector2(384, 191)
+states/Idle/node = SubResource("AnimationNodeAnimation_tc28o")
+states/Idle/position = Vector2(384, 100)
+transitions = ["Start", "Idle", SubResource("AnimationNodeStateMachineTransition_5of3o"), "Idle", "Chase", SubResource("AnimationNodeStateMachineTransition_wnjb2"), "Chase", "Idle", SubResource("AnimationNodeStateMachineTransition_nwmda")]
+graph_offset = Vector2(1, 0)
+
+[sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_4leet"]
+graph_offset = Vector2(-57.4546, 83.3636)
+nodes/StateMachine/node = SubResource("AnimationNodeStateMachine_mvvpf")
+nodes/StateMachine/position = Vector2(60, 140)
+nodes/output/position = Vector2(340, 180)
+node_connections = [&"output", 0, &"StateMachine"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_tc28o"]
+radius = 4.0
+
+[node name="BatEnemy" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 7
+motion_mode = 1
+script = ExtResource("1_tc28o")
+range = 104.0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_nu3at")
+offset = Vector2(-1, -4)
+hframes = 5
+
+[node name="ShadowSprite2D" type="Sprite2D" parent="."]
+show_behind_parent = true
+texture = ExtResource("2_mtn0m")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -3)
+shape = SubResource("CircleShape2D_wnjb2")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_mtn0m")
+}
+
+[node name="AnimationTree" type="AnimationTree" parent="."]
+tree_root = SubResource("AnimationNodeBlendTree_4leet")
+advance_expression_base_node = NodePath("..")
+anim_player = NodePath("../AnimationPlayer")
+
+[node name="RayCast2D" type="RayCast2D" parent="."]
+target_position = Vector2(8, 0)
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(0, -6)
+shape = SubResource("CircleShape2D_tc28o")
