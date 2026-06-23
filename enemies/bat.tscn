@@ -1,8 +1,17 @@
-[gd_scene load_steps=16 format=3 uid="uid://dfd08eqgqijph"]
+[gd_scene load_steps=24 format=3 uid="uid://dfd08eqgqijph"]
 
 [ext_resource type="Texture2D" uid="uid://db2d0w6jmkg1m" path="res://enemies/bat.png" id="1_nu3at"]
 [ext_resource type="Script" uid="uid://bucmadmmeoyya" path="res://enemies/bat.gd" id="1_tc28o"]
 [ext_resource type="Texture2D" uid="uid://du0uetncnfpd7" path="res://shadows/small_shadow.png" id="2_mtn0m"]
+[ext_resource type="Script" uid="uid://dcrxxkoq144ue" path="res://stats.gd" id="2_wnjb2"]
+[ext_resource type="Script" uid="uid://b8sh70mo4p4f2" path="res://damage_boxes/hurtbox.gd" id="4_5of3o"]
+[ext_resource type="Script" uid="uid://bnocpilq7rc8t" path="res://damage_boxes/hitbox.gd" id="6_nwmda"]
+
+[sub_resource type="Resource" id="Resource_nwmda"]
+script = ExtResource("2_wnjb2")
+health = 3
+max_health = 3
+metadata/_custom_type_script = "uid://dcrxxkoq144ue"
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_wnjb2"]
 radius = 5.0
@@ -20,6 +29,30 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:collision_layer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:collision_mask")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [5]
 }
 
 [sub_resource type="Animation" id="Animation_tc28o"]
@@ -40,14 +73,59 @@ tracks/0/keys = {
 "values": [0, 1, 2, 3, 4]
 }
 
+[sub_resource type="Animation" id="Animation_wnjb2"]
+resource_name = "hit"
+length = 0.2
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [3]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:collision_layer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [0, 4]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:collision_mask")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [1, 5]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_mtn0m"]
 _data = {
 &"RESET": SubResource("Animation_5of3o"),
-&"fly": SubResource("Animation_tc28o")
+&"fly": SubResource("Animation_tc28o"),
+&"hit": SubResource("Animation_wnjb2")
 }
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_mtn0m"]
 animation = &"fly"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_nwmda"]
+animation = &"hit"
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_tc28o"]
 animation = &"fly"
@@ -63,16 +141,23 @@ advance_expression = "can_see_player()"
 advance_mode = 2
 advance_expression = "not can_see_player()"
 
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_mvvpf"]
+advance_mode = 2
+advance_expression = "velocity == 
+Vector2(0, 0)"
+
 [sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_mvvpf"]
-states/Chase/node = SubResource("AnimationNodeAnimation_mtn0m")
-states/Chase/position = Vector2(384, 191)
-states/Idle/node = SubResource("AnimationNodeAnimation_tc28o")
-states/Idle/position = Vector2(384, 100)
-transitions = ["Start", "Idle", SubResource("AnimationNodeStateMachineTransition_5of3o"), "Idle", "Chase", SubResource("AnimationNodeStateMachineTransition_wnjb2"), "Chase", "Idle", SubResource("AnimationNodeStateMachineTransition_nwmda")]
-graph_offset = Vector2(1, 0)
+states/ChaseState/node = SubResource("AnimationNodeAnimation_mtn0m")
+states/ChaseState/position = Vector2(384, 192)
+states/HitState/node = SubResource("AnimationNodeAnimation_nwmda")
+states/HitState/position = Vector2(562, 100)
+states/IdleState/node = SubResource("AnimationNodeAnimation_tc28o")
+states/IdleState/position = Vector2(384, 100)
+transitions = ["Start", "IdleState", SubResource("AnimationNodeStateMachineTransition_5of3o"), "IdleState", "ChaseState", SubResource("AnimationNodeStateMachineTransition_wnjb2"), "ChaseState", "IdleState", SubResource("AnimationNodeStateMachineTransition_nwmda"), "HitState", "IdleState", SubResource("AnimationNodeStateMachineTransition_mvvpf")]
+graph_offset = Vector2(12, -19)
 
 [sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_4leet"]
-graph_offset = Vector2(-57.4546, 83.3636)
+graph_offset = Vector2(-131.785, 72.124)
 nodes/StateMachine/node = SubResource("AnimationNodeStateMachine_mvvpf")
 nodes/StateMachine/position = Vector2(60, 140)
 nodes/output/position = Vector2(340, 180)
@@ -81,12 +166,15 @@ node_connections = [&"output", 0, &"StateMachine"]
 [sub_resource type="CircleShape2D" id="CircleShape2D_tc28o"]
 radius = 4.0
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_mvvpf"]
+radius = 4.0
+
 [node name="BatEnemy" type="CharacterBody2D"]
 collision_layer = 4
-collision_mask = 7
+collision_mask = 5
 motion_mode = 1
 script = ExtResource("1_tc28o")
-range = 104.0
+stats = SubResource("Resource_nwmda")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_nu3at")
@@ -114,8 +202,23 @@ anim_player = NodePath("../AnimationPlayer")
 [node name="RayCast2D" type="RayCast2D" parent="."]
 target_position = Vector2(8, 0)
 
-[node name="Area2D" type="Area2D" parent="."]
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 16
+script = ExtResource("4_5of3o")
+metadata/_custom_type_script = "uid://b8sh70mo4p4f2"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
 position = Vector2(0, -6)
 shape = SubResource("CircleShape2D_tc28o")
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 8
+script = ExtResource("6_nwmda")
+metadata/_custom_type_script = "uid://bnocpilq7rc8t"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(0, -6)
+shape = SubResource("CircleShape2D_mvvpf")
+debug_color = Color(0.977112, 0, 0.406657, 0.42)

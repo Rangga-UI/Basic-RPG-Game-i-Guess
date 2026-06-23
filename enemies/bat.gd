@@ -1,26 +1,29 @@
 extends CharacterBody2D
 
 const SPEED = 30.0
+const FRICTION = 500.0
 
-@export var range: = 128.0
+@export var min_range: = 4
+@export var max_range: = 128.0
+@export var stats: Stats
 
 @onready var sprite_2d: Sprite2D = $Sprite2D
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var playback = animation_tree.get("parameters/StateMachine/playback") as AnimationNodeStateMachinePlayback
 @onready var ray_cast_2d: RayCast2D = $RayCast2D
-@onready var area_2d: Area2D = $Area2D
+@onready var hurtbox: Hurtbox = $Hurtbox
 
 func _ready() -> void:
-	area_2d.area_entered.connect(func(other_area_2d: Area2D):
-		queue_free()
-		)
+	stats = stats.duplicate()
+	hurtbox.hurt.connect(take_hit.call_deferred)
+	stats.no_health.connect(queue_free)
 
 func _physics_process(delta: float) -> void:
 	var state = playback.get_current_node()
 	
 	match state:
-		"Idle": pass
-		"Chase": 
+		"IdleState": pass
+		"ChaseState": 
 			var player = get_player()
 			if player is Player:
 				velocity = global_position.direction_to(player.global_position) * SPEED
@@ -28,6 +31,15 @@ func _physics_process(delta: float) -> void:
 			else:
 				velocity = Vector2.ZERO
 			move_and_slide()
+		"HitState":
+			velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
+			move_and_slide()
+
+func take_hit(other_hitbox: Hitbox) -> void:
+	stats.health -= other_hitbox.damage
+	velocity = other_hitbox.knockback_direction * other_hitbox.knockback_amount
+	playback.start("HitState")
+
 
 func get_player() -> Player:
 	return get_tree().get_first_node_in_group("player")
@@ -37,7 +49,7 @@ func is_player_in_range() -> bool:
 	var player = get_player()
 	if player is Player:
 		var distance_to_player = global_position.distance_to(player.global_position)
-		if distance_to_player < range:
+		if distance_to_player < max_range and distance_to_player > min_range:
 			result = true
 	return result
 
