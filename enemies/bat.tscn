@@ -138,8 +138,6 @@ advance_mode = 2
 advance_expression = "can_see_player()"
 
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_nwmda"]
-advance_mode = 2
-advance_expression = "not can_see_player()"
 
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_mvvpf"]
 advance_mode = 2
@@ -157,7 +155,6 @@ transitions = ["Start", "IdleState", SubResource("AnimationNodeStateMachineTrans
 graph_offset = Vector2(12, -19)
 
 [sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_4leet"]
-graph_offset = Vector2(-131.785, 72.124)
 nodes/StateMachine/node = SubResource("AnimationNodeStateMachine_mvvpf")
 nodes/StateMachine/position = Vector2(60, 140)
 nodes/output/position = Vector2(340, 180)
@@ -225,3 +222,10 @@ debug_color = Color(0.977112, 0, 0.406657, 0.42)
 
 [node name="Center" type="Marker2D" parent="."]
 position = Vector2(0, -6)
+
+[node name="Marker2D" type="Marker2D" parent="."]
+position = Vector2(0, -3)
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Marker2D"]
+path_desired_distance = 4.0
+target_desired_distance = 4.0

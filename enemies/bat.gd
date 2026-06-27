@@ -16,6 +16,8 @@ const FRICTION = 500.0
 @onready var ray_cast_2d: RayCast2D = $RayCast2D
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var center: Marker2D = $Center
+@onready var marker_2d: Marker2D = $Marker2D
+@onready var navigation_agent_2d: NavigationAgent2D = $Marker2D/NavigationAgent2D
 
 func _ready() -> void:
 	stats = stats.duplicate()
@@ -30,7 +32,9 @@ func _physics_process(delta: float) -> void:
 		"ChaseState": 
 			var player = get_player()
 			if player is Player:
-				velocity = global_position.direction_to(player.global_position) * SPEED
+				navigation_agent_2d.target_position = player.global_position
+				var next_point = navigation_agent_2d.get_next_path_position()
+				velocity = global_position.direction_to(next_point - marker_2d.position) * SPEED
 				sprite_2d.scale.x = sign(velocity.x)
 			else:
 				velocity = Vector2.ZERO
@@ -70,6 +74,7 @@ func can_see_player() -> bool:
 	if not is_player_in_range(): return false
 	var player = get_player()
 	ray_cast_2d.target_position = player.global_position - global_position
+	ray_cast_2d.force_raycast_update()
 	var has_los_to_player = not ray_cast_2d.is_colliding()
 	return has_los_to_player
 	
